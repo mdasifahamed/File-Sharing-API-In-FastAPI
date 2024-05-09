@@ -7,9 +7,6 @@ def get_user(user_email:str, db:Session):
 
     return db.query(db_model.Users).filter(db_model.Users.email == user_email).first()
 
-
-
-
 def createUser(user: User, db:Session):
     print(user)
     hashedPassword = hash(user.password)
