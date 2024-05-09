@@ -30,6 +30,7 @@ def createAccessToken(data:dict):
 def verifyAccessToken(token,credentialException):
     try:
         payload = jwt.decode(token,secrect_key,algorithm)
+        print("Payloald",payload)
         user_id = payload.get('id')
         user_role = payload.get('role')
 
@@ -44,12 +45,13 @@ def verifyAccessToken(token,credentialException):
     
     return token_data
 
-def get_current_user(token = Depends(oauth2_schma), db: Session=(database_engine.get_db)):
+def get_current_user(token = Depends(oauth2_schma), db: Session=Depends(database_engine.get_db)):
     credException = HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,detail="UnAthorized Access", headers={"WWW-AUTHENTICATE":"Bearer"})
 
     token = verifyAccessToken(token,credException)
+    print(token)
 
-    user = db.query(db_model.Users).filter(db_model.Users.id== token.id , db_model.Users.role == token.role)
+    user = db.query(db_model.Users).filter(db_model.Users.id== token.id , db_model.Users.role == token.role).first()
 
     return user
 

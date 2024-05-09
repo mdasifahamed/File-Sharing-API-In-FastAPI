@@ -21,7 +21,7 @@ class ReturnUser(BaseModel):
     created_at: datetime
 
     class Config:
-        from_attributes = True
+        orm_mode = True
 
 class ReturnToken(BaseModel):
     access_token: str

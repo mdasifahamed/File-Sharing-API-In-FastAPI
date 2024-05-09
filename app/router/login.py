@@ -16,6 +16,7 @@ router = APIRouter(
 @router.post('/login',status_code=status.HTTP_201_CREATED,response_model=ReturnToken)
 async def login(user_credential:OAuth2PasswordRequestForm = Depends(), 
 db : Session=Depends(database_engine.get_db)):
+    
     user = db.query(db_model.Users).filter(db_model.Users.email == user_credential.username).first()
 
     # if Email Addess Is Not Valid Then Throw Error
@@ -30,7 +31,7 @@ db : Session=Depends(database_engine.get_db)):
                             
                             detail=f"Invalid Credential")
     
-    token = createAccessToken(data={'id': user.id, 'email':user.email})
+    token = createAccessToken(data={'id': user.id, 'role':user.role})
 
     tokendata = ReturnToken(access_token=token,token_type="bearer")
 
