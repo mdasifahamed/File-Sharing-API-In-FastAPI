@@ -23,7 +23,7 @@ router = APIRouter(
 @router.post('/file_upload')
 async def uploadFile(file:UploadFile,db: Session = Depends(database_engine.get_db),
 current_user = Depends(get_current_user)):
-    # Copy The Upload File In Bnary Mode Teh Server TO Store The Close The File
+    # Copy The Uploaded File In Binary Mode To The Server To Store The File Then Close The File
     try:
 
         with open(os.path.join(upload_path,file.filename),'wb') as newFile:
@@ -44,7 +44,7 @@ current_user = Depends(get_current_user)):
 @router.post('/sharefile',status_code=status.HTTP_201_CREATED)
 async def shareFiles(file_info:ShareFiles, db: Session = Depends(database_engine.get_db),
                      current_user = Depends(get_current_user)):
-    # checks is the owner is shareing the file or someone else
+    # checks is the owner of the file is shareing the file or someone else
     if not files_query.isFileOwner(file_name=file_info.file_name,current_user=current_user,db=db):
 
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,detail="Not A File Owner")
@@ -59,7 +59,8 @@ async def shareFiles(file_info:ShareFiles, db: Session = Depends(database_engine
 @router.get('/getfiles',status_code=status.HTTP_202_ACCEPTED,response_model=List[ResponseFiles])
 async def get_owner_files(db: Session =Depends(database_engine.get_db),
     current_user=Depends(get_current_user)):
-    # get All the Files Of The Logged In user Not The Shared The One The User Own
+    # get All the Files Of The Logged In User 
+    # This Path Only Return The Files Is Owned By The Current Logged In User
     try:
         files = files_query.get_all_files_of_owner(user_id=current_user.id,db=db)
     
@@ -74,7 +75,7 @@ async def get_owner_files(db: Session =Depends(database_engine.get_db),
 async def getsharedFiles(db: Session = Depends(database_engine.get_db),
     current_user = Depends(get_current_user)):
 
-    # get All the Shared Files Of The Loged In User Which Has Been Shared To Him
+    # get All the Shared Files Of The current logged In User Which Has Been Shared To Him
     files = files_query.get_shared_files(db, current_user)
    
     return files    
@@ -84,13 +85,13 @@ async def getsharedFiles(db: Session = Depends(database_engine.get_db),
 async def downloadFile(file_id:int, db: Session = Depends(database_engine.get_db),
         current_user = Depends(get_current_user)):
     
-    # checks if The File Exist or Not
+    # checks if The File Exists or Not
     if not files_query.hasFile(file_id=file_id,db=db):
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,detail='File Not Found')
     
     file = files_query.getFileInfo(file_id=file_id, db=db)
 
-    # user has acces too downlaod the file or not
+    # check if the user has access to downlaod the file or not
     if  files_query.isFileOwner(file.file_name,db=db,current_user=current_user) or files_query.hasShared(file_id=file_id,db=db,current_user=current_user):
         print("owner :", files_query.isFileOwner(file.file_name,db=db,current_user=current_user))
         print("share :", files_query.hasShared(file_id=file_id,db=db,current_user=current_user))
