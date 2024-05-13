@@ -33,6 +33,6 @@ db : Session=Depends(database_engine.get_db)):
     
     token = createAccessToken(data={'id': user.id, 'role':user.role})
 
-    tokendata = ReturnToken(access_token=token,token_type="bearer")
+    token_data = ReturnToken(access_token=token,token_type="bearer")
 
-    return tokendata
+    return token_data
