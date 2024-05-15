@@ -41,7 +41,6 @@ app.dependency_overrides[get_db] = override_get_db
 
 @pytest.fixture(scope='module')
 def client():
-    print("From client")
         
     Base.metadata.create_all(bind=db_engine)
     yield TestClient(app)
@@ -63,14 +62,14 @@ def test_user1(client):
 # Dummy User 2
 @pytest.fixture(scope='module')
 def test_user2(client):
-    user={'email':'dummy_user2@ymail.com','password':'password123','role':'admin'}
+    user={'email':'dummy_user5@ymail.com','password':'password123','role':'admin'}
     res = client.post('/register', json =user)
-    test_user1 = res.json()
+    test_user2 = res.json()
 
     assert res.status_code ==  201
 
-    test_user1['password'] = user['password']
-    return test_user1
+    test_user2['password'] = user['password']
+    return test_user2
 
 
 # Dummy User 3
@@ -78,12 +77,12 @@ def test_user2(client):
 def test_user3(client):
     user={'email':'dummy_user3@ymail.com','password':'password123','role':'user'}
     res = client.post('/register', json =user)
-    test_user1 = res.json()
+    test_user3 = res.json()
 
     assert res.status_code ==  201
 
-    test_user1['password'] = user['password']
-    return test_user1
+    test_user3['password'] = user['password']
+    return test_user3
 
 
 """ All The user_looged_in fixture returns a client
@@ -104,7 +103,7 @@ def test_user3(client):
 
 @pytest.fixture(scope='module')
 def user1_logged_in(test_user1,client):
-    
+
     res = client.post('/login',data = {'username':test_user1['email'],'password':test_user1['password']})
     token = res.json().get('access_token')
     client.headers.update({"Authorization":f'Bearer {token}'})
@@ -112,7 +111,6 @@ def user1_logged_in(test_user1,client):
 
 @pytest.fixture(scope='module')
 def user2_logged_in(test_user2,client):
-    
     res = client.post('/login',data = {'username':test_user2['email'],'password':test_user2['password']})
     token = res.json().get('access_token')
     client.headers.update({"Authorization":f'Bearer {token}'})
@@ -120,7 +118,6 @@ def user2_logged_in(test_user2,client):
 
 @pytest.fixture(scope='module')
 def user3_logged_in(test_user3,client):
-    
     res = client.post('/login',data = {'username':test_user3['email'],'password':test_user3['password']})
     token = res.json().get('access_token')
     client.headers.update({"Authorization":f'Bearer {token}'})
@@ -132,9 +129,6 @@ def user1_file_upload(user1_logged_in):
     with open(file,'rb') as uploadFile:
         res = user1_logged_in.post('/file_upload', files = {'file':uploadFile})
         return res.json()
-
-   
-
 
 
 
