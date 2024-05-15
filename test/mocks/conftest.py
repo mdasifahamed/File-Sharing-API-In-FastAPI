@@ -39,13 +39,16 @@ def override_get_db():
 app.dependency_overrides[get_db] = override_get_db
 
 
-@pytest.fixture(scope="module")
+@pytest.fixture(scope='module')
 def client():
+    print("From client")
         
     Base.metadata.create_all(bind=db_engine)
     yield TestClient(app)
     Base.metadata.drop_all(bind=db_engine)
 
+
+# Dummy User 1
 @pytest.fixture(scope='module')
 def test_user1(client):
     user={'email':'dummy_user1@ymail.com','password':'password123','role':'admin'}
@@ -56,5 +59,75 @@ def test_user1(client):
 
     test_user1['password'] = user['password']
     return test_user1
+
+# Dummy User 2
+@pytest.fixture(scope='module')
+def test_user2(client):
+    user={'email':'dummy_user2@ymail.com','password':'password123','role':'admin'}
+    res = client.post('/register', json =user)
+    test_user1 = res.json()
+
+    assert res.status_code ==  201
+
+    test_user1['password'] = user['password']
+    return test_user1
+
+
+# Dummy User 3
+@pytest.fixture(scope='module')
+def test_user3(client):
+    user={'email':'dummy_user3@ymail.com','password':'password123','role':'user'}
+    res = client.post('/register', json =user)
+    test_user1 = res.json()
+
+    assert res.status_code ==  201
+
+    test_user1['password'] = user['password']
+    return test_user1
+
+
+""" All The user_looged_in fixture returns a client
+
+    As The API Only Permits To Upload And Share Files Between The Users
+    Of The API. And the API Seeks Token Authentication. The Client Created At The Top
+    Is Updated Here With The Authentication Headers For Further Tests
+
+    Steps Done Here
+    1. log a user with created from the test_user fixtrues
+    2.  '/login' path returns Dict of JWT token and token_bearer type
+    3. Extract the token from the response from the '/login'
+    4. Updated the client header with the token
+    5. Returned The Same Updated Client
+
+    Same proccess is applied for fixtures user1_looged_in, user2_looged_in user3_looged_in
+"""
+
+@pytest.fixture(scope='module')
+def user1_logged_in(test_user1,client):
+    
+    res = client.post('/login',data = {'username':test_user1['email'],'password':test_user1['password']})
+    token = res.json().get('access_token')
+    client.headers.update({"Authorization":f'Bearer {token}'})
+    return client
+
+@pytest.fixture(scope='module')
+def user2_logged_in(test_user2,client):
+    
+    res = client.post('/login',data = {'username':test_user2['email'],'password':test_user2['password']})
+    token = res.json().get('access_token')
+    client.headers.update({"Authorization":f'Bearer {token}'})
+    return client
+
+@pytest.fixture(scope='module')
+def user3_logged_in(test_user3,client):
+    
+    res = client.post('/login',data = {'username':test_user3['email'],'password':test_user3['password']})
+    token = res.json().get('access_token')
+    client.headers.update({"Authorization":f'Bearer {token}'})
+    return client
+   
+
+
+
 
 
