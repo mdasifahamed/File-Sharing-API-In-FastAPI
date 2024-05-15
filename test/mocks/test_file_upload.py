@@ -6,7 +6,6 @@ new_client = TestClient(app)
 
 def test_uploadFile(user2_logged_in):
     file = os.getcwd()+'/test/mocks/test.txt'
-    print(os.getcwd())
 
     with open(file,'rb') as uploadFile:
         res = user2_logged_in.post('/file_upload',files={'file':uploadFile})
@@ -17,7 +16,6 @@ def test_uploadFail():
        It's Newly Created Client It As Nothing
     """
     file = os.getcwd()+'/test/mocks/test.txt'
-    print(os.getcwd())
 
     with open(file,'rb') as uploadFile:
         res = new_client.post('/file_upload',files={'file':uploadFile})
