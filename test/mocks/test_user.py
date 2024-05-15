@@ -1,51 +1,13 @@
-import os,pytest
-from fastapi.testclient import TestClient
-from jose import jwt
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker,Session
-from dotenv import load_dotenv
-from app.main import app
-from app.Database.database_engine import get_db
-from app.Database.db_model import Base, Users
+import pytest
 from app import pydantic_model
+from jose import jwt 
+import os 
+from dotenv import load_dotenv
 
 load_dotenv()
-
-# Load Environment Variable From .env file 
-db_user = os.getenv('db_user')
-db_password = os.getenv('db_password')
-db_host_name = os.getenv('db_host_name')
-db_name = os.getenv('db_test_db_name')
 secrect_key = os.getenv('SECRECT_KEY')
 algorithm = os.getenv('ALGORITHM')
 token_expire_time = os.getenv('ACCESS_TOKEN_EXPIRE_MINUTES')
-db_url = f"postgresql://{db_user}:{db_password}@{db_host_name}/{db_name}"
-
-
-db_engine = create_engine(db_url)
-
-
-TestSession = sessionmaker(autoflush=False,bind=db_engine)
-
-
-''' Function To Get DB Session Within The App'''
-def override_get_db():
-    db = TestSession()
-    try:
-        yield db
-    finally:
-        db.close()
-
-app.dependency_overrides[get_db] = override_get_db
-
-
-@pytest.fixture(scope="module")
-def client():
-        
-    Base.metadata.create_all(bind=db_engine)
-    yield TestClient(app)
-    Base.metadata.drop_all(bind=db_engine)
-    
 
 def test_register_user(client):
     r = client.post('/register',json={"email":'dummyuser@gmail.com', 'password':'password123','role':'admin'})
@@ -65,7 +27,23 @@ def test_log(client):
     assert user_role == 'admin'
     assert r.status_code == 201
 
+@pytest.mark.parametrize('email,password,status_code',[
+    (None,"password123",422),
+    ('dummyuser@gmail.com',"password",403)
+])
+def test_invalid_login(client, email,password,status_code):
+    res = client.post('/login',data={"username":email,'password':password})
+    assert res.status_code == status_code
+
+def test_test_user_login(client,test_user1):
+
+    res = client.post('/login', data={'username': test_user1['email'] ,'password': test_user1['password']})
+    token = res.json().get('access_token')
+    # decode the token and return the info 
+    payload = jwt.decode(token,secrect_key,algorithm)
+    user_role = payload.get('role')
+    print(test_user1['email'])
+    assert user_role == 'admin'
+    assert res.status_code == 201
 
 
-
-    
