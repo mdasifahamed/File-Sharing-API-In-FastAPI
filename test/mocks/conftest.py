@@ -125,6 +125,14 @@ def user3_logged_in(test_user3,client):
     token = res.json().get('access_token')
     client.headers.update({"Authorization":f'Bearer {token}'})
     return client
+
+@pytest.fixture(scope='module')
+def user1_file_upload(user1_logged_in):
+    file = os.getcwd()+'/test/mocks/test.txt'
+    with open(file,'rb') as uploadFile:
+        res = user1_logged_in.post('/file_upload', files = {'file':uploadFile})
+        return res.json()
+
    
 
 
