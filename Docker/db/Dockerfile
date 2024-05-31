@@ -1,0 +1,5 @@
+FROM postgres
+
+ENV POSTGRES_PASSWORD=admin
+
+EXPOSE 5432

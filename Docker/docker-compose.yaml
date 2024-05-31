@@ -1,0 +1,47 @@
+services:
+  db:
+    image: postgres_for_fastapi:4.0
+    volumes:
+      - fastapi_pagdata:/var/lib/postgresql/data
+    networks:
+      - fastapi-to-postgres
+
+
+  webapi:
+    build:
+      context: ..
+      dockerfile: Docker/app/Dockerfile
+      args:
+        DB_HOST_NAME: ${DB_HOST_NAME}
+        DB_NAME: ${DB_NAME}
+        DB_USER: ${DB_USER}
+        DB_PASSWORD: ${DB_PASSWORD}
+        SECRECT_KEY: ${SECRECT_KEY}
+        ALGORITHM: ${ALGORITHM}
+        ACCESS_TOKEN_EXPIRE_MINUTES: ${ACCESS_TOKEN_EXPIRE_MINUTES}
+    environment:
+          db_host_name: ${DB_HOST_NAME}
+          db_name: ${DB_NAME}
+          db_user: ${DB_USER}
+          db_password: ${DB_PASSWORD}
+          SECRECT_KEY: ${SECRECT_KEY}
+          ALGORITHM: ${ALGORITHM}
+          ACCESS_TOKEN_EXPIRE_MINUTES: ${ACCESS_TOKEN_EXPIRE_MINUTES}
+
+    ports:
+      - "8080:8080"
+    depends_on:
+      -  db
+    networks:
+      - fastapi-to-postgres
+    
+
+
+networks:
+  fastapi-to-postgres:
+    driver: bridge
+
+
+volumes:
+  fastapi_pagdata:
+    external: true
